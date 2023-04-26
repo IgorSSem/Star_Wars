@@ -1,0 +1,8 @@
+type: edu
+files:
+- name: tests.py
+  visible: true
+- name: available_aircraft.sql
+  visible: true
+- name: s1.sql
+  visible: true
