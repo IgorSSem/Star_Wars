@@ -16,25 +16,21 @@ class TestSQLProject(SQLTest):
         self.execute('insert_data')
         self.execute('add_floor')
 
-        result1 = self.execute("SELECT max(case when name = 'floor' then 1 else 0 end) as f  FROM pragma_table_info('hangars')")
-        is_floor = result1.fetchone()[0]
-        if is_floor != 1:
+        result1 = self.execute_and_fetch_all("SELECT 1 FROM pragma_table_info('hangars') WHERE name = 'floor'")
+        if len(result1) == 0:
             return wrong("There is no column 'floor' in the table 'hangars'")
 
         self.execute('update_floor')
 
-        result2 = self.execute("SELECT "
-                               "sum(case when floor <> substr(hangar_id, 1, instr(hangar_id, '-') - 1) then 1 else 0 end) as cnt "
-                               "FROM hangars")
-        cnt = result2.fetchone()[0]
-        if cnt > 0:
-            result3 = self.execute("SELECT '(e.g., for hangar_id = ''' ||''|| hangar_id ||''|| ''' the value ''' ||''|| "
-                                   "substr(hangar_id, 1, instr(hangar_id, '-') - 1) ||''|| "
-                                   "''' is expected, but your result is ''' ||''|| floor ||''|| ''')' as er_msg  "
-                                   "FROM hangars "
-                                   "WHERE floor <> substr(hangar_id, 1, instr(hangar_id, '-') - 1) "
-                                   "LIMIT 1;")
-            err_msg = result3.fetchone()[0]
-            return wrong(str(cnt) + " updates are incorrect " + err_msg)
+        result2 = self.execute_and_fetch_all("SELECT hangar_id, substr(hangar_id, 1, instr(hangar_id, '-') - 1) AS s, "
+                                             "floor, count(*) over () AS cnt "
+                                             "FROM hangars "
+                                             "WHERE floor <> substr(hangar_id, 1, instr(hangar_id, '-') - 1) "
+                                             "Limit 1;")
+
+        if len(result2) > 0:
+            return wrong(str(result2[0][3]) + " updates are incorrect, e.g. for hangar_id = '" + str(result2[0][0]) +
+                         "', the floor value was expected to be '" + str(result2[0][1]) +
+                         "', and now it is '" + str(result2[0][2]) + "'")
 
         return correct()
