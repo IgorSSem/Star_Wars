@@ -48,11 +48,12 @@ class TestSQLProject(SQLTest):
         answ1 = self.execute_and_fetch_all('available_aircraft')
 
         if len(answ1) == 0:
-            return wrong("Your query returned an empty dataset")
-        aircraft_cnt = answ1[0]
+            return wrong("Your query 'available_aircraft' returned an empty dataset")
+
+        aircraft_cnt = answ1[0][0]
 
         test1 = self.execute_and_fetch_all("SELECT sum(aircraft_in_hangar) as cnt_a FROM hangars;")
-        cnt_e = test1[0]
+        cnt_e = test1[0][0]
         if cnt_e != aircraft_cnt:
             return wrong(
                 "There are " + str(cnt_e) + " available  crafts are in all hangars, but your query returns "
@@ -60,7 +61,7 @@ class TestSQLProject(SQLTest):
 
         answ2 = self.execute_and_fetch_all('most_popular_aircraft')
         if len(answ2) < 1:
-            return wrong("Your query returned an empty dataset")
+            return wrong("Your query 'most_popular_aircraft' returned an empty dataset")
 
         test2 = self.execute_and_fetch_all(";WITH x1 AS ("
                                            "SELECT type_of_aircraft, sum(aircraft_in_hangar) AS amount "
@@ -88,7 +89,7 @@ class TestSQLProject(SQLTest):
 
         answ3 = self.execute_and_fetch_all('largest_number_of_aircraft')
         if len(answ3) < 1:
-            return wrong("Your query returned an empty dataset")
+            return wrong("Your query 'largest_number_of_aircraft' returned an empty dataset")
 
         test3 = self.execute_and_fetch_all("SELECT hangar_id "
                                            "FROM "

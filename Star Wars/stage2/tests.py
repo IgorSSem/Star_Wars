@@ -16,9 +16,13 @@ class TestSQLProject(SQLTest):
         self.execute('insert_data')
         self.execute('add_floor')
 
-        result1 = self.execute_and_fetch_all("SELECT 1 FROM pragma_table_info('hangars') WHERE name = 'floor'")
+        result1 = self.execute_and_fetch_all("SELECT lower(type) as type FROM pragma_table_info('hangars') WHERE name "
+                                             "= 'floor'")
         if len(result1) == 0:
             return wrong("There is no column 'floor' in the table 'hangars'")
+        if 'text' not in result1[0][0]:
+            return wrong("The column 'floor' was created, but it has wrong type: '" +
+                         str(result1[0][0]) + "' instead of 'text'")
 
         self.execute('update_floor')
 
